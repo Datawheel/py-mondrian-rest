@@ -198,6 +198,12 @@ class Cube(object):
         # raise if not found
         raise ValueError('level with name `%s`` not found' % level_name)
 
+    def get_members(self, dimension_name, level_name):
+        return self.client.get_members(
+            self.name,
+            dimension_name,
+            level_name
+        )['members']
 
     def get_aggregation(self, drilldown=[], cut=[], measures=[], **extra_params):
 
