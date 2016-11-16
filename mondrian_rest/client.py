@@ -13,10 +13,11 @@ BOOL_OPTS = ['nonempty', 'distinct', 'parents']
 
 class Aggregation(object):
 
-    def __init__(self, data, cube, agg_params=None):
+    def __init__(self, data, cube, url, agg_params=None):
         self._data = data
         self._cube = cube
         self._agg_params = agg_params
+        self.url = url
 
         self._tidy = None
 
@@ -231,11 +232,11 @@ class MondrianClient(object):
         self.api_base = api_base
 
     def get_cubes(self):
-        r = self._request(urljoin(self.api_base, 'cubes'))
+        r = self._request(urljoin(self.api_base, 'cubes')).json()
         return [Cube(*(itemgetter(*CUBE_ATTRS)(c) + (self,))) for c in r['cubes']]
 
     def get_cube(self, cube_id):
-        r = self._request(urljoin(self.api_base, 'cubes/' + cube_id))
+        r = self._request(urljoin(self.api_base, 'cubes/' + cube_id)).json()
         return Cube(*(itemgetter(*CUBE_ATTRS)(r) + (self,)))
 
     # TODO: validate shape of params
@@ -257,13 +258,12 @@ class MondrianClient(object):
         if len(params.get('cut', [])) > 0:
             qs_params['cut[]'] = params['cut']
 
-        return Aggregation(
-            self._request(
+        r = self._request(
                 urljoin(self.api_base, 'cubes/%s/aggregate' % cube.name),
                 qs_params
-            ),
-            cube,
-            params)
+            )
+
+        return Aggregation(r.json(), cube, r.url, params)
 
     def get_members(self, cube_id, dimension, level):
         return self._request(
@@ -271,10 +271,10 @@ class MondrianClient(object):
                 self.api_base,
                 'cubes/%s/dimensions/%s/levels/%s/members' % (cube_id, dimension, level)
             )
-        )
+        ).json()
 
     def get_member(self, cube, member_full_name):
         raise Exception('Not Implemented')
 
     def _request(self, url, params=None):
-        return requests.get(url, params=params).json()
+        return requests.get(url, params=params)
