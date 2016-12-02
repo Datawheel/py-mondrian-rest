@@ -95,7 +95,7 @@ class Aggregation(object):
             for row in tidy['data']:
                 r = []
                 for j, cell in enumerate(row[:len(tidy['axes'])]):
-                    for ancestor in cell['ancestors'][:slices[j]-1]:
+                    for ancestor in reversed(cell['ancestors'][:slices[j]-1]):
                         r += [ancestor['key'], ancestor['caption']]
                     r += [cell['key'], cell['caption']]
 
