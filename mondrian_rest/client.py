@@ -252,6 +252,9 @@ class MondrianClient(object):
         if len(params.get('cut', [])) > 0:
             qs_params['cut[]'] = params['cut']
 
+        if len(params.get('properties', [])) > 0:
+            qs_params['properties[]'] = params['properties']
+
         r = self._request(
                 urljoin(self.api_base, 'cubes/%s/aggregate' % cube.name),
                 qs_params
