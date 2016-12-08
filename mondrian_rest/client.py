@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 import requests
 
+from mondrian_rest.identifier import Identifier
+
 CUBE_ATTRS = ['name', 'dimensions', 'measures', 'annotations']
 BOOL_OPTS = ['nonempty', 'distinct', 'parents']
 
@@ -145,14 +147,6 @@ class Cube(object):
             d['name']: d for d in self.dimensions
         }
 
-    @staticmethod
-    def parse_identifier(ident_str):
-        return ident_str.split('.')
-
-    @staticmethod
-    def part_to_ident(*parts):
-        return '.'.join(['[%s]' % p for p in parts])
-
     @property
     def time_dimension(self):
         tds = [d for d in self.dimensions if d['type'] == 'time']
@@ -211,7 +205,7 @@ class Cube(object):
         agg_params = copy.copy(extra_params)
 
         agg_params['drilldown'] = [
-            self.get_level(*Cube.parse_identifier(dd))
+            self.get_level(*[seg.name for seg in Identifier.parse(dd).segments])
             for dd in drilldown
         ]
 
