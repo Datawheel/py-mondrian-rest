@@ -80,7 +80,7 @@ class Identifier(object):
         def inner():
 
             c = string[pstate['i']]
-            #print "%s - %s - %s" % (string[pstate['start']:pstate['i']+1].strip(), c, pstate)
+
             if pstate['state'] in (STATE.START, STATE.BEFORE_SEG):
                 if c == '[':
                     pstate.update({
