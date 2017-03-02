@@ -1,138 +1,14 @@
 from operator import itemgetter
 from urlparse import urljoin
-from itertools import product, ifilter, izip
-from functools import reduce as reduce_
-import copy
 
-import numpy as np
-import pandas as pd
+import copy
 import requests
 
 from mondrian_rest.identifier import Identifier
+from mondrian_rest.aggregation import Aggregation
 
 CUBE_ATTRS = ['name', 'dimensions', 'measures', 'annotations']
 BOOL_OPTS = ['nonempty', 'distinct', 'parents']
-
-class Aggregation(object):
-
-    def __init__(self, data, cube, url, agg_params=None):
-        self._data = data
-        self._cube = cube
-        self._agg_params = agg_params
-        self.url = url
-
-        self._tidy = None
-
-    @property
-    def axes(self):
-        return self._data['axes']
-
-    @property
-    def measures(self):
-        return self.axes[0]['members']
-
-    @property
-    def values(self):
-        return self._data['values']
-
-    @property
-    def axis_dimensions(self):
-        return self._data['axis_dimensions']
-
-    @property
-    def tidy(self):
-        """ Unroll the JSON representation of a result into a
-            'tidy' (http://vita.had.co.nz/papers/tidy-data.pdf) dataset. """
-
-        if self._tidy is not None:
-            return self._tidy
-
-        data = self._data
-        measures = data['axes'][0]['members']
-        prod = [izip(e['members'],
-                    xrange(len(e['members'])))
-                for e in data['axes'][1:]]
-        values = data['values']
-
-        def buildRow(cell):
-            cidxs = list(reversed([ c[1] for c in cell ]))
-
-            cm = [
-                c[0]
-                for c in cell
-            ]
-
-            mvalues = [ reduce(lambda memo, cur: memo[cur],  # navigate to values[coords]
-                               cidxs + [mi],
-                               values)
-                        for mi, m in enumerate(measures) ]
-
-            return cm + mvalues
-
-        self._tidy = {
-            'axes': data['axis_dimensions'][1:],
-            'measures': measures,
-            'data': [ buildRow(cell) for cell in product(*prod) ]
-        }
-
-        return self._tidy
-
-    def to_pandas(self, filter_empty_measures=True):
-        tidy = self.tidy
-        columns = []
-        table = []
-
-        # header row
-        if self._agg_params['parents']:
-            slices = []
-            for dd in tidy['axes']:
-                slices.append(dd['level_depth'])
-                for ancestor_level in self._cube.dimensions_by_name[dd['name']]['hierarchies'][0]['levels'][1:dd['level_depth']]:
-                    columns += ['ID %s' % ancestor_level['caption'], ancestor_level['caption']]
-                columns += ['ID %s' % dd['level'], dd['level']]
-
-            # measure names
-            columns += [m['caption'] for m in self._agg_params['measures']]
-
-            for row in tidy['data']:
-                r = []
-                for j, cell in enumerate(row[:len(tidy['axes'])]):
-                    for ancestor in reversed(cell['ancestors'][:slices[j]-1]):
-                        r += [ancestor['key'], ancestor['caption']]
-                    r += [cell['key'], cell['caption']]
-
-                for mvalue in row[len(tidy['axes']):]:
-                    r.append(mvalue)
-
-                table.append(r)
-
-        else: # no parents
-            for dd in tidy['axes']:
-                columns += ['ID %s' % dd['level'], dd['level']]
-            # measure names
-            columns += [m['caption'] for m in self._agg_params['measures']]
-
-            for row in tidy['data']:
-                r = []
-                for cell in row[:len(tidy['axes'])]:
-                    r += [cell['key'], cell['caption']]
-
-                for mvalue in row[len(tidy['axes']):]:
-                    r.append(mvalue)
-
-                table.append(r)
-
-        df = pd.DataFrame(table,
-                          columns=columns) \
-               .set_index(columns[:-len(self._agg_params['measures'])])
-
-        if filter_empty_measures:
-            df = df[reduce_(np.logical_and,
-                            [df[msr['name']].notnull()
-                            for msr in self.measures])]
-
-        return df
-
 
 class Cube(object):
 
