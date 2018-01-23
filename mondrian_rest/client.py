@@ -1,5 +1,10 @@
 from operator import itemgetter
-from urlparse import urljoin
+
+import sys
+if sys.version_info >= (3, 0):
+    from urllib.parse import urlparse
+else: 
+    from urlparse import urljoin
 
 import copy
 import requests
