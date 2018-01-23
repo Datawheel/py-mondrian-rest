@@ -193,13 +193,13 @@ class Identifier(object):
 if __name__ == '__main__':
     # TODO: port these tests
     # https://github.com/olap4j/olap4j/blob/b8eccd85753ffddb66c9d8b7c2cd7de2bd510ce0/testsrc/org/olap4j/impl/Olap4jUtilTest.java#L358
-    print Identifier.parse('[Date].[Year].[2010]').segments
-    print
-    print Identifier.parse("[string].[with].[a [bracket]] in it]").segments
-    print
-    print Identifier.parse("Time.1997.[Q3]").segments
-    print
-    print Identifier.parse("[Customers].[City].&[San Francisco]&CA&USA.&[cust1234]").segments
-    print
-    print Identifier.parse("[Date].Year").segments
-    print
+    print(Identifier.parse('[Date].[Year].[2010]').segments)
+    print()
+    print(Identifier.parse("[string].[with].[a [bracket]] in it]").segments)
+    print()
+    print(Identifier.parse("Time.1997.[Q3]").segments)
+    print()
+    print(Identifier.parse("[Customers].[City].&[San Francisco]&CA&USA.&[cust1234]").segments)
+    print()
+    print(Identifier.parse("[Date].Year").segments)
+    print()
