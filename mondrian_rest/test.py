@@ -76,7 +76,7 @@ class TestAggregation(unittest.TestCase):
         agg = Aggregation(self.aggregation_fixture)
 
         # TODO: add assertions
-        print len(agg.tidy['data'])
+        print(len(agg.tidy['data']))
 
 
     def test_pandas_with_parents(self):
