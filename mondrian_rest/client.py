@@ -2,7 +2,7 @@ from operator import itemgetter
 
 import sys
 if sys.version_info >= (3, 0):
-    from urllib.parse import urlparse
+    from urllib.parse import urljoin
 else: 
     from urlparse import urljoin
 
