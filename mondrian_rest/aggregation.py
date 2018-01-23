@@ -1,5 +1,8 @@
 from functools import reduce as reduce_
-from itertools import product, ifilter, izip, groupby
+try:
+    from itertools import product, izip, groupby
+except ImportError:
+    izip = zip
 
 import numpy as np
 import pandas as pd
