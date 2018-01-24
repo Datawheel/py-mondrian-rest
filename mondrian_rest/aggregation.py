@@ -95,7 +95,7 @@ class Aggregation(object):
         data = self._data
         measures = data['axes'][0]['members']
         prod = [izip(e['members'],
-                    xrange(len(e['members'])))
+                    range(len(e['members'])))
                 for e in data['axes'][1:]]
         values = data['values']
 
