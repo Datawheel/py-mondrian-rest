@@ -107,7 +107,7 @@ class Aggregation(object):
                 for c in cell
             ]
 
-            mvalues = [ reduce(lambda memo, cur: memo[cur],  # navigate to values[coords]
+            mvalues = [ reduce_(lambda memo, cur: memo[cur],  # navigate to values[coords]
                                cidxs + [mi],
                                values)
                         for mi, m in enumerate(measures) ]
