@@ -7,7 +7,8 @@ except ImportError:
 import numpy as np
 import pandas as pd
 
-from mondrian-rest.identifier import Identifier
+from .identifier import Identifier
+
 
 def parse_properties(properties):
     """
@@ -19,25 +20,21 @@ def parse_properties(properties):
 
     def reducer(h, it):
         k, v = it
-        h[k] = dict(map(lambda jt: (jt[0], map(lambda vv: list(vv)[-1].name, jt[1])),
-                        groupby(v, key=lambda s: s.segments[1].name)))
+        h[k] = dict(
+            map(lambda jt: (jt[0], map(lambda vv: list(vv)[-1].name, jt[1])),
+                groupby(v, key=lambda s: s.segments[1].name)))
         return h
 
     return reduce(
         reducer,
         groupby(
             sorted(
-                map(Identifier.parse,
-                    properties),
-                key=lambda p: ".".join(map(lambda s: s.name, p[:2]))
-            ),
-            key=lambda s: s[0].name
-        ),
-        {}
-    )
+                map(Identifier.parse, properties),
+                key=lambda p: ".".join(map(lambda s: s.name, p[:2]))),
+            key=lambda s: s[0].name), {})
+
 
 def get_props(row, pnames, props, dimensions):
-
     def reducer(h, row):
         ax_i, member = row
         dname = dimensions[ax_i]['name']
@@ -48,7 +45,8 @@ def get_props(row, pnames, props, dimensions):
             if member.get('ancestors'):
                 for l, p in filter(lambda it: it[0] != mmbr_lvl,
                                    props[dname].items()):
-                    anc = next(anc for anc in member['ancestors'] if anc['level_name'] == l)
+                    anc = next(anc for anc in member['ancestors']
+                               if anc['level_name'] == l)
                     for prop in p:
                         h[prop] = anc['properties'][prop]
 
@@ -58,8 +56,8 @@ def get_props(row, pnames, props, dimensions):
 
     return map(lambda pn: pvalues[pn], pnames)
 
-class Aggregation(object):
 
+class Aggregation(object):
     def __init__(self, data, cube, url, agg_params=None):
         self._data = data
         self._cube = cube
@@ -94,30 +92,30 @@ class Aggregation(object):
 
         data = self._data
         measures = data['axes'][0]['members']
-        prod = [izip(e['members'],
-                    range(len(e['members'])))
-                for e in data['axes'][1:]]
+        prod = [
+            izip(e['members'], range(len(e['members'])))
+            for e in data['axes'][1:]
+        ]
         values = data['values']
 
         def build_row(cell):
-            cidxs = list(reversed([ c[1] for c in cell ]))
+            cidxs = list(reversed([c[1] for c in cell]))
 
-            cm = [
-                c[0]
-                for c in cell
+            cm = [c[0] for c in cell]
+
+            mvalues = [
+                reduce_(
+                    lambda memo, cur: memo[cur],  # navigate to values[coords]
+                    cidxs + [mi],
+                    values) for mi, m in enumerate(measures)
             ]
-
-            mvalues = [ reduce_(lambda memo, cur: memo[cur],  # navigate to values[coords]
-                               cidxs + [mi],
-                               values)
-                        for mi, m in enumerate(measures) ]
 
             return cm + mvalues
 
         self._tidy = {
             'axes': data['axis_dimensions'][1:],
             'measures': measures,
-            'data': [ build_row(cell) for cell in product(*prod) ]
+            'data': [build_row(cell) for cell in product(*prod)]
         }
 
         return self._tidy
@@ -137,8 +135,13 @@ class Aggregation(object):
             slices = []
             for dd in tidy['axes']:
                 slices.append(dd['level_depth'])
-                for ancestor_level in self._cube.dimensions_by_name[dd['name']]['hierarchies'][0]['levels'][1:dd['level_depth']]:
-                    columns += ['ID %s' % ancestor_level['caption'], ancestor_level['caption']]
+                for ancestor_level in self._cube.dimensions_by_name[dd[
+                        'name']]['hierarchies'][0]['levels'][1:dd[
+                            'level_depth']]:
+                    columns += [
+                        'ID %s' % ancestor_level['caption'],
+                        ancestor_level['caption']
+                    ]
                 columns += ['ID %s' % dd['level'], dd['level']]
 
             # property names
@@ -150,13 +153,12 @@ class Aggregation(object):
             for row in tidy['data']:
                 r = []
                 for j, cell in enumerate(row[:len(tidy['axes'])]):
-                    for ancestor in reversed(cell['ancestors'][:slices[j]-1]):
+                    for ancestor in reversed(
+                            cell['ancestors'][:slices[j] - 1]):
                         r += [ancestor['key'], ancestor['caption']]
                     r += [cell['key'], cell['caption']]
 
-                r += get_props(row[:-len(measures)],
-                               pnames,
-                               props,
+                r += get_props(row[:-len(measures)], pnames, props,
                                tidy['axes'])
 
                 for mvalue in row[len(tidy['axes']):]:
@@ -164,7 +166,7 @@ class Aggregation(object):
 
                 table.append(r)
 
-        else: # no parents
+        else:  # no parents
             for dd in tidy['axes']:
                 columns += ['ID %s' % dd['level'], dd['level']]
             # measure names
@@ -175,9 +177,7 @@ class Aggregation(object):
                 for cell in row[:len(tidy['axes'])]:
                     r += [cell['key'], cell['caption']]
 
-                r += get_props(row[:-len(measures)],
-                               pnames,
-                               props,
+                r += get_props(row[:-len(measures)], pnames, props,
                                tidy['axes'])
 
                 for mvalue in row[len(tidy['axes']):]:
@@ -190,8 +190,8 @@ class Aggregation(object):
                .set_index(columns[:-len(self._agg_params['measures'])])
 
         if filter_empty_measures:
-            df = df[reduce_(np.logical_and,
-                            [df[msr['name']].notnull()
-                            for msr in self.measures])]
+            df = df[reduce_(
+                np.logical_and,
+                [df[msr['name']].notnull() for msr in self.measures])]
 
         return df

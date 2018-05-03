@@ -2,6 +2,11 @@
 
 A Python client for [`mondrian-rest`](https://github.com/jazzido/mondrian-rest)
 
+## Install
+Install from PyPI, using pip:
+
+`pip install mondrian-rest`
+
 
 ## License
 
