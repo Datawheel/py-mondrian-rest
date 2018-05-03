@@ -8,6 +8,6 @@ setup(
     author='Manuel Aristaran - Datawheel',
     author_email='manuel@jazzido.com',
     license='MIT',
-    packages=['mondrian-rest'],
-    install_requires=['numpy', 'pandas', 'requests'],
+    packages=['mondrian_rest'],
+    install_requires=['numpy', 'pandas', 'requests', 'urlparse'],
     zip_safe=False)
