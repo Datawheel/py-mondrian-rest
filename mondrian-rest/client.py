@@ -9,8 +9,8 @@ else:
 import copy
 import requests
 
-from mondrian_rest.identifier import Identifier
-from mondrian_rest.aggregation import Aggregation
+from mondrian-rest.identifier import Identifier
+from mondrian-rest.aggregation import Aggregation
 
 CUBE_ATTRS = ['name', 'dimensions', 'measures', 'annotations']
 BOOL_OPTS = ['nonempty', 'distinct', 'parents']

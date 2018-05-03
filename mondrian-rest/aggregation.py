@@ -7,7 +7,7 @@ except ImportError:
 import numpy as np
 import pandas as pd
 
-from mondrian_rest.identifier import Identifier
+from mondrian-rest.identifier import Identifier
 
 def parse_properties(properties):
     """
