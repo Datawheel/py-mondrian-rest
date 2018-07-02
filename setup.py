@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='mondrian-rest',
-    version='0.3',
+    version='0.4',
     description='Python client for mondrian-rest',
     url='http://github.com/Datawheel/mondrian-rest',
     author='Manuel Aristaran - Datawheel',

@@ -1,7 +1,11 @@
 import unittest
 from mock import patch, MagicMock, Mock
 from operator import itemgetter
-from urlparse import urljoin
+import sys
+if sys.version_info >= (3, 0):
+    from urllib.parse import urljoin
+else: 
+    from urlparse import urljoin
 import json
 import os
 

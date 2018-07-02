@@ -1,2 +1,4 @@
 *.pyc
 .vscode
+*.tar.gz
+mondrian_rest.egg-info/
